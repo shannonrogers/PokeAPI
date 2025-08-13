@@ -1,5 +1,6 @@
 import requests
 import json
+import random
 
 # def get_eevee():
 #     url  = 'https://pokeapi.co/api/v2/pokemon/eevee'
@@ -43,7 +44,9 @@ def get_pokemon_data(pokemon_identifier):
         }
         return pokemon
     else: 
-        print(f'failed to catch {pokemon_identifier}')
+        print(f'failed to find {pokemon_identifier}')
+
+    
 
 class Pokemon: 
 
@@ -81,6 +84,16 @@ class Player:
             print("The team is full!  Remove a Pokemon to make space")
             return
     
+    def view_team(self,): 
+        if not self.team: 
+            print("You currently have no Pokemon!")
+        else: 
+            count = 1
+            for pokemon in self.team: 
+                print(f"==========\n{count}.") 
+                pokemon.info()
+                count += 1
+    
     def remove_pokemon(self, index): 
         if len(self.team) and index >= 0 and index < len(self.team):
             pokemon = self.team.pop(index)
@@ -89,16 +102,10 @@ class Player:
         else: 
             print('Invalid slot number')
             return
+        
+        
+
     
-    def view_team(self,): 
-        if not self.team: 
-            print("You currently have no Pokemon!")
-        else: 
-            count = 1
-            for pokemon in self.team: 
-                print(f"{count}.") 
-                pokemon.info()
-                count += 1
         
 class PokemonGame: 
     def __init__(self): 
@@ -111,6 +118,28 @@ class PokemonGame:
         self.player = Player(name)
         print(f"Let's go, {self.player.name}!")
         self.choose_starter()
+
+    def go_hunting(self):
+        num = random.randint(1, 1025)
+        hunt = get_pokemon_data(num)
+        wild_pokemon = Pokemon(**hunt)
+        print(f"A wild {wild_pokemon.name} appeared!")
+        print(wild_pokemon.info())
+        
+        catch = input(f"Would you like to try and catch {wild_pokemon.name}? ").lower().strip()
+        if catch == 'yes':
+            self.try_catch_pokemon(wild_pokemon)
+        else: 
+            print(f"{self.player.name} has run away")
+
+    
+    def try_catch_pokemon(self, pokemon): 
+        chance = random.randint(0,100)
+        if chance > 25: 
+            self.player.add_pokemon(pokemon)
+        else: 
+            print(f"{pokemon.name} has escaped")
+    
     
     def choose_starter(self):
         while True: 
@@ -119,7 +148,7 @@ class PokemonGame:
             print("1. Torchic")
             print("2. Turtwig")
             print("3. Piplup")
-            poke_name = input("Which do you choose? (enter name): ").lower()
+            poke_name = input("Which do you choose? (enter name): ").lower().strip()
 
             if poke_name not in starters: 
                 print("Please choose an option from the list")
@@ -136,9 +165,9 @@ class PokemonGame:
         while True: 
             print("""
             =========Menu==========
-            1. Search for Pokemon
-            2. View our Team
-            3. Remove Pokemon from Team
+            1. Go hunting (find wild Pokemon)
+            2. View your collection
+            3. Remove Pokemon from collection
             4. Quit Game
                 """)
             choice = int(input("What would you like to do? (1-4): "))
@@ -150,7 +179,7 @@ class PokemonGame:
         
             match choice: 
                 case 1: 
-                    pass
+                    self.go_hunting()
                 case 2: 
                     self.player.view_team()
                 case 3: 
